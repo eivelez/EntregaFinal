@@ -54,5 +54,11 @@
         android:id="@+id/noteDetailTV"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="TextView" />
+        android:text="Sample text Lorem ipsum" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ubicacion" />
+    
 </LinearLayout>
