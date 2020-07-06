@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.finalproject">
-
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -11,6 +10,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <!-- utilice una api key que me dio un profe hace tiempo, no se si siga valida pero no quiero usar la tarjeta -->
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyBH9V5bQR8NiE3cDgeax6xuFkn0B6LdEk4"/>
+
+
         <activity android:name=".ItemDetail" android:theme="@style/Theme.MaterialComponents.NoActionBar"></activity>
         <activity android:name=".UserPage" />
         <activity

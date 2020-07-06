@@ -20,6 +20,9 @@ interface Api {
     @GET("items/?")
     fun getListItems(@Query("list_id") listId:String, @Header("token")key:String): Call<JsonArray>
 
+    @GET("items/{id}")
+    fun getItem(@Path("id")id:String , @Header("token")key:String): Call<JsonObject>
+
     //@GET("trending")
     //fun getTrend(@Query("api_key") apiKey:String?,@Query("limit") limit:String?):Call<JsonObject>
 

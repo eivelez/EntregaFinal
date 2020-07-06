@@ -1,5 +1,6 @@
 package com.example.finalproject
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.finalproject.configuration.API_KEY
@@ -97,14 +98,15 @@ class MainActivity : AppCompatActivity() ,
                     }
                 }
                 override fun onFailure(call: Call<JsonArray>, t: Throwable) {
-                    println("fallo")
                 }
             })
         }
     }
 
     override fun onListFragmentInteraction2(item: String) {
-        TODO("Not yet implemented")
+        val intent = Intent(this, ItemDetail::class.java)
+        intent.putExtra("ID", item)
+        startActivity(intent)
     }
 
 }
