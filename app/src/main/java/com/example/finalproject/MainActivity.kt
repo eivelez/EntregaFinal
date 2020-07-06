@@ -3,6 +3,8 @@ package com.example.finalproject
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.LayoutInflater
+import androidx.appcompat.app.AlertDialog
 import com.example.finalproject.configuration.API_KEY
 import com.example.finalproject.dummy.DummyContent
 import com.example.finalproject.network.Api
@@ -10,6 +12,9 @@ import com.example.finalproject.network.Service
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.new_list_dialog.*
+import kotlinx.android.synthetic.main.new_list_dialog.view.*
+import kotlinx.android.synthetic.main.new_list_dialog.view.newListInput
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
@@ -20,9 +25,16 @@ class MainActivity : AppCompatActivity() ,
     toDoListFragment.OnListFragmentInteractionListener,
     TareasFragment.OnListFragmentInteractionListener2 {
     var loggedUser = User("test@mail.com","Your","Name","+569 99999999","")
+    var buttonState = "list"
+    var listCant = 0
+    var listOfLists:MutableList<MutableList<String>> = ArrayList()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        buttonCreate.text = "+ Nueva lista"
+        buttonCreate.setOnClickListener {
+            addElement()
+        }
         val request = Service.buildService(Api::class.java)
         val call1 = request.getUser(API_KEY)
         call1.enqueue(object : Callback<JsonObject> {
@@ -45,7 +57,8 @@ class MainActivity : AppCompatActivity() ,
             override fun onResponse(call: Call<JsonArray>, response: Response<JsonArray>) {
                 if (response.isSuccessful) {
                     var answer = response.body() as JsonArray
-                    var listOfLists:MutableList<MutableList<String>> = ArrayList()
+                    listCant = answer.size()
+                    listOfLists = ArrayList()
                     val params = listOf("id", "name", "position","created_at","updated_at")
                     for (item in answer){
                         var jsonItem = item as JsonObject
@@ -95,6 +108,8 @@ class MainActivity : AppCompatActivity() ,
                             .beginTransaction()
                             .add(R.id.mainContainer,TareasFragment.newInstance(listOfLists),"TAREASLISTS")
                             .commit()
+                        buttonCreate.text = "+ Nueva tarea"
+                        buttonState = "tarea"
                     }
                 }
                 override fun onFailure(call: Call<JsonArray>, t: Throwable) {
@@ -107,6 +122,64 @@ class MainActivity : AppCompatActivity() ,
         val intent = Intent(this, ItemDetail::class.java)
         intent.putExtra("ID", item)
         startActivity(intent)
+    }
+
+    fun addElement(){
+        if (buttonState == "list"){
+            val mDialogView =  LayoutInflater.from(this).inflate(R.layout.new_list_dialog,null)
+            val mBuilder = AlertDialog.Builder(this).setView(mDialogView).setTitle("Nombre nueva lista:")
+            val mAlertDialog = mBuilder.show()
+            mDialogView.createNewListButton.setOnClickListener{
+                val dialogInput = mDialogView.newListInput.text.toString()
+                if (dialogInput!=""){
+                    mAlertDialog.dismiss()
+                    val dataJson = JsonObject()
+                    dataJson.addProperty("position",listCant)
+                    dataJson.addProperty("name",dialogInput)
+
+                    val request = Service.buildService(Api::class.java)
+                    val call4 = request.addList(dataJson.toString(),API_KEY)
+                    call4.enqueue(object : Callback<JsonObject> {
+                        override fun onResponse(call: Call<JsonObject>, response: Response<JsonObject>) {
+                            if (response.isSuccessful) {
+                                var responseJ = response.body() as JsonObject
+                                val newListData:MutableList<String> = ArrayList()
+
+                                val aux = listOf(responseJ.get("id").toString(),
+                                    responseJ.get("name").toString(),
+                                    responseJ.get("position").toString(),
+                                    responseJ.get("created_at").toString(),
+                                    responseJ.get("updated_at").toString())
+
+                                for (i in aux){
+                                    newListData.add(i)
+                                }
+
+                                listOfLists.add(newListData)
+                                var openFragment = supportFragmentManager.findFragmentByTag("TODOLISTS")
+                                if (openFragment != null) {
+                                    supportFragmentManager
+                                        .beginTransaction()
+                                        .remove(openFragment).commit()
+                                    supportFragmentManager
+                                        .beginTransaction()
+                                        .add(R.id.mainContainer,toDoListFragment.newInstance(listOfLists),"TODOLISTS")
+                                        .commit()
+                                }
+                            }
+                        }
+                        override fun onFailure(call: Call<JsonObject>, t: Throwable) {
+                        }
+                    })
+                }
+            }
+            mDialogView.cancelNewListButton.setOnClickListener {
+                mAlertDialog.dismiss()
+            }
+        }
+        else if (buttonState == "tarea"){
+
+        }
     }
 
 }

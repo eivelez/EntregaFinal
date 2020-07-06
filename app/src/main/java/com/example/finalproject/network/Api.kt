@@ -13,15 +13,16 @@ interface Api {
     @GET("lists/")
     fun getLists(@Header("token")key: String?): Call<JsonArray>
 
-    @POST("lists/")
-    @Headers("Content-Type: application/json")
-    fun addList(@Body body: String, @Header("token")key: String): Call<JsonObject>
 
     @GET("items/?")
     fun getListItems(@Query("list_id") listId:String, @Header("token")key:String): Call<JsonArray>
 
     @GET("items/{id}")
     fun getItem(@Path("id")id:String , @Header("token")key:String): Call<JsonObject>
+
+    @POST("lists/")
+    @Headers("Content-Type: application/json")
+    fun addList(@Body body: String, @Header("token")key: String): Call<JsonObject>
 
     //@GET("trending")
     //fun getTrend(@Query("api_key") apiKey:String?,@Query("limit") limit:String?):Call<JsonObject>
