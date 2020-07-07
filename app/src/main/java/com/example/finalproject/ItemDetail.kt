@@ -1,10 +1,22 @@
 package com.example.finalproject
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Looper
+import android.provider.Settings
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import com.example.finalproject.configuration.API_KEY
 import com.example.finalproject.network.Api
 import com.example.finalproject.network.Service
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapFragment
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -23,9 +35,16 @@ class ItemDetail : AppCompatActivity() {
     lateinit var mapFragment : SupportMapFragment
     lateinit var googleMap: GoogleMap
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_item_detail)
+
+
+
+
+
+
         val id = intent.getStringExtra("ID")
         val request = Service.buildService(Api::class.java)
         val call3 = request.getItem(id, API_KEY)
@@ -74,4 +93,7 @@ class ItemDetail : AppCompatActivity() {
         })
 
     }
+
+
+
 }

@@ -1,16 +1,28 @@
 package com.example.finalproject
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Looper
+import android.provider.Settings
 import android.view.LayoutInflater
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
 import com.example.finalproject.configuration.API_KEY
 import com.example.finalproject.dummy.DummyContent
 import com.example.finalproject.network.Api
 import com.example.finalproject.network.Service
+import com.google.android.gms.location.*
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import kotlinx.android.synthetic.main.activity_item_detail.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.new_list_dialog.*
 import kotlinx.android.synthetic.main.new_list_dialog.view.*
@@ -30,11 +42,18 @@ class MainActivity : AppCompatActivity() ,
     var listCant = 0
     var openList = 0
     var tareaCant = 0
+    var lastlat:Double = 0.0
+    var lastlong:Double = 0.0
     var listOfLists:MutableList<MutableList<String>> = ArrayList()
     var listOfTareas:MutableList<MutableList<String>> = ArrayList()
+    lateinit var mFusedLocationClient: FusedLocationProviderClient
+    var PERMISSION_ID = 42
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        getLastLocation()
         buttonCreate.text = "+ Nueva lista"
         buttonCreate.setOnClickListener {
             addElement()
@@ -125,10 +144,12 @@ class MainActivity : AppCompatActivity() ,
 
     override fun onBackPressed() {
         if (buttonState=="tarea"){
+
             var openFragment = supportFragmentManager.findFragmentByTag("TAREASLISTS")
             if (openFragment != null) {
                 supportFragmentManager.beginTransaction().remove(openFragment).commit()
                 buttonState = "list"
+                buttonCreate.text = "+ Nueva Lista"
                 supportFragmentManager.beginTransaction()
                     .add(R.id.mainContainer,toDoListFragment.newInstance(listOfLists),"TODOLISTS")
                     .commit()
@@ -217,8 +238,8 @@ class MainActivity : AppCompatActivity() ,
                     dataJson.addProperty("starred",false)
                     var noteSample = "Esta nota es generada como muestra para inluirla en los items creados, lorem ipsum bla bla bla"
                     dataJson.addProperty("notes",noteSample)
-                    var lat:Double = 50.50
-                    var long:Double = -85.36
+                    var lat:Double = lastlat
+                    var long:Double = lastlong
                     dataJson.addProperty("lat",lat)
                     dataJson.addProperty("long",long)
                     //println(dataJson)
@@ -280,6 +301,94 @@ class MainActivity : AppCompatActivity() ,
         }
     }
 
+    @SuppressLint("MissingPermission")
+    private fun getLastLocation() {
+        requestNewLocationData()
+        if (checkPermissions()) {
+            if (isLocationEnabled()) {
+
+                mFusedLocationClient.lastLocation.addOnCompleteListener(this) { task ->
+                    var location: Location? = task.result
+                    if (location == null) {
+                        requestNewLocationData()
+                    } else {
+                        if (location != null) {
+                            lastlat = location.latitude
+                            lastlong = location.longitude
+
+                        }
+                    }
+                }
+            } else {
+                Toast.makeText(this, "Turn on location", Toast.LENGTH_LONG).show()
+                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                startActivity(intent)
+            }
+        } else {
+            requestPermissions()
+        }
+    }
+
+    private val mLocationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult) {
+            var mLastLocation: Location = locationResult.lastLocation
+            lastlat = mLastLocation.latitude
+            lastlong = mLastLocation.longitude
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun requestNewLocationData() {
+        var mLocationRequest = LocationRequest()
+        mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        mLocationRequest.interval = 0
+        mLocationRequest.fastestInterval = 0
+        mLocationRequest.numUpdates = 1
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        mFusedLocationClient!!.requestLocationUpdates(
+            mLocationRequest, mLocationCallback,
+            Looper.myLooper()
+        )
+    }
+    private fun checkPermissions(): Boolean {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+            return true
+        }
+        return false
+    }
+
+    private fun requestPermissions() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION),
+            PERMISSION_ID
+        )
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        if (requestCode == PERMISSION_ID) {
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                // Granted. Start getting the location information
+            }
+        }
+    }
+
+    private fun isLocationEnabled(): Boolean {
+        var locationManager: LocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
+            LocationManager.NETWORK_PROVIDER
+        )
+    }
+
+
+
+
 }
+
+
+
+
 data class User(var email: String, var first_name: String, var last_name : String, var phone:String, var profile_photo:String):Serializable
 
