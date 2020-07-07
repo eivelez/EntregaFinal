@@ -91,10 +91,51 @@ class MainActivity : AppCompatActivity() ,
                         }
                         listOfLists.add(list)
                     }
-                    supportFragmentManager
-                        .beginTransaction()
-                        .add(R.id.mainContainer,toDoListFragment.newInstance(listOfLists),"TODOLISTS")
-                        .commit()
+                    val callSL = request.getSharedLists(API_KEY)
+                    callSL.enqueue(object : Callback<JsonArray> {
+                        override fun onResponse(call: Call<JsonArray>, response: Response<JsonArray>) {
+                            if (response.isSuccessful) {
+                                var answer = response.body() as JsonArray
+                                var list: MutableList<String> = ArrayList()
+                                for (item in answer){
+                                    var jsonItem = item as JsonObject
+                                    list.add(jsonItem.get("list_id").toString())
+                                }
+                                for (sl in list){
+                                    val callSLDetail = request.getList(sl,API_KEY)
+                                    callSLDetail.enqueue(object : Callback<JsonObject> {
+                                        override fun onResponse(call: Call<JsonObject>, response: Response<JsonObject>) {
+                                            if (response.isSuccessful) {
+                                                var answer = response.body() as JsonObject
+                                                var stringAux=answer.get("name").asString
+                                                stringAux+=" (compartida)"
+                                                val mList: MutableList<String> = ArrayList()
+                                                val aux = listOf(answer.get("id").toString(),
+                                                    stringAux.toString(),
+                                                    answer.get("position").toString(),
+                                                    answer.get("created_at").toString(),
+                                                    answer.get("updated_at").toString())
+                                                for (i in aux){
+                                                    mList.add(i)
+                                                }
+                                                listOfLists.add(mList)
+                                                if(sl==list[list.size-1]){
+                                                    supportFragmentManager
+                                                        .beginTransaction()
+                                                        .add(R.id.mainContainer,toDoListFragment.newInstance(listOfLists),"TODOLISTS")
+                                                        .commit()
+                                                }
+                                            }
+                                        }
+                                        override fun onFailure(call: Call<JsonObject>, t: Throwable) {
+                                        }
+                                    })
+                                }
+                            }
+                        }
+                        override fun onFailure(call: Call<JsonArray>, t: Throwable) {
+                        }
+                    })
                 }
             }
             override fun onFailure(call: Call<JsonArray>, t: Throwable) {

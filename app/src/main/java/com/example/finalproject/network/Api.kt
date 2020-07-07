@@ -2,6 +2,7 @@ package com.example.finalproject.network
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -27,6 +28,13 @@ interface Api {
     @POST("items")
     @Headers("Content-Type: application/json")
     fun addItem(@Body body:String, @Header("token")key:String): Call<JsonArray>
+
+    @GET("shared_lists")
+    @Headers("Content-Type: application/json")
+    fun getSharedLists(@Header("token")key:String): Call<JsonArray>
+
+    @GET("/lists/{list_id}")
+    fun getList(@Path("list_id")id:String , @Header("token")key: String): Call<JsonObject>
 
     //@GET("trending")
     //fun getTrend(@Query("api_key") apiKey:String?,@Query("limit") limit:String?):Call<JsonObject>
