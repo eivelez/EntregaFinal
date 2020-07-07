@@ -15,6 +15,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.new_list_dialog.*
 import kotlinx.android.synthetic.main.new_list_dialog.view.*
 import kotlinx.android.synthetic.main.new_list_dialog.view.newListInput
+import kotlinx.android.synthetic.main.new_tarea_dialog.view.*
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
@@ -27,7 +28,10 @@ class MainActivity : AppCompatActivity() ,
     var loggedUser = User("test@mail.com","Your","Name","+569 99999999","")
     var buttonState = "list"
     var listCant = 0
+    var openList = 0
+    var tareaCant = 0
     var listOfLists:MutableList<MutableList<String>> = ArrayList()
+    var listOfTareas:MutableList<MutableList<String>> = ArrayList()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -81,6 +85,7 @@ class MainActivity : AppCompatActivity() ,
     }
 
     override fun onListFragmentInteraction(id: String) {
+        openList=id.toInt()
         var openFragment = supportFragmentManager.findFragmentByTag("TODOLISTS")
         if (openFragment != null) {
             supportFragmentManager
@@ -93,20 +98,20 @@ class MainActivity : AppCompatActivity() ,
                 override fun onResponse(call: Call<JsonArray>, response: Response<JsonArray>) {
                     if (response.isSuccessful) {
                         var answer = response.body() as JsonArray
-                        var listOfLists:MutableList<MutableList<String>> = ArrayList()
+                        listOfTareas = ArrayList()
                         val params = listOf("id", "name", "position","list_id","starred","done","due_date","notes","created_at","updated_at","lat","long")
+                        tareaCant = answer.size()
                         for (item in answer){
                             var jsonItem = item as JsonObject
                             var list: MutableList<String> = ArrayList()
                             for (param in params){
-                                println(jsonItem.get(param))
                                 list.add(jsonItem.get(param).toString())
                             }
-                            listOfLists.add(list)
+                            listOfTareas.add(list)
                         }
                         supportFragmentManager
                             .beginTransaction()
-                            .add(R.id.mainContainer,TareasFragment.newInstance(listOfLists),"TAREASLISTS")
+                            .add(R.id.mainContainer,TareasFragment.newInstance(listOfTareas),"TAREASLISTS")
                             .commit()
                         buttonCreate.text = "+ Nueva tarea"
                         buttonState = "tarea"
@@ -116,6 +121,20 @@ class MainActivity : AppCompatActivity() ,
                 }
             })
         }
+    }
+
+    override fun onBackPressed() {
+        if (buttonState=="tarea"){
+            var openFragment = supportFragmentManager.findFragmentByTag("TAREASLISTS")
+            if (openFragment != null) {
+                supportFragmentManager.beginTransaction().remove(openFragment).commit()
+                buttonState = "list"
+                supportFragmentManager.beginTransaction()
+                    .add(R.id.mainContainer,toDoListFragment.newInstance(listOfLists),"TODOLISTS")
+                    .commit()
+            }
+        }
+
     }
 
     override fun onListFragmentInteraction2(item: String) {
@@ -178,6 +197,85 @@ class MainActivity : AppCompatActivity() ,
             }
         }
         else if (buttonState == "tarea"){
+            val mDialogView =  LayoutInflater.from(this).inflate(R.layout.new_tarea_dialog,null)
+            val mBuilder = AlertDialog.Builder(this).setView(mDialogView).setTitle("Nombre nueva tarea:")
+            val mAlertDialog = mBuilder.show()
+            mDialogView.createNewTareaButton.setOnClickListener{
+                val dialogInput = mDialogView.newTareaInput.text.toString()
+                if (dialogInput!=""){
+                    mAlertDialog.dismiss()
+                    val dataJson = JsonObject()
+                    val jsonMain = JsonObject()
+
+
+                    val itemContainer = JsonArray()
+                    dataJson.addProperty("position",tareaCant)
+                    dataJson.addProperty("name",dialogInput)
+                    dataJson.addProperty("list_id",openList)
+                    var dateSample = "2022-06-15 23:59:59"
+                    dataJson.addProperty("due_date",dateSample)
+                    dataJson.addProperty("starred",false)
+                    var noteSample = "Esta nota es generada como muestra para inluirla en los items creados, lorem ipsum bla bla bla"
+                    dataJson.addProperty("notes",noteSample)
+                    var lat:Double = 50.50
+                    var long:Double = -85.36
+                    dataJson.addProperty("lat",lat)
+                    dataJson.addProperty("long",long)
+                    //println(dataJson)
+
+                    itemContainer.add(dataJson)
+                    //println(itemContainer)
+
+                    jsonMain.add ("items",itemContainer)
+
+                    //println(jsonMain.toString())
+                    val request = Service.buildService(Api::class.java)
+                    val call5 = request.addItem(jsonMain.toString(),API_KEY)
+                    call5.enqueue(object : Callback<JsonArray> {
+                        override fun onResponse(call: Call<JsonArray>, response: Response<JsonArray>) {
+                            if (response.isSuccessful) {
+                                var responseJA = response.body() as JsonArray
+                                var responseJ = responseJA[0] as JsonObject
+                                val newTareaData:MutableList<String> = ArrayList()
+                                val aux = listOf(responseJ.get("id").toString(),
+                                    responseJ.get("name").toString(),
+                                    responseJ.get("position").toString(),
+                                    responseJ.get("list_id").toString(),
+                                    responseJ.get("starred").toString(),
+                                    responseJ.get("done").toString(),
+                                    responseJ.get("due_date").toString(),
+                                    responseJ.get("notes").toString(),
+                                    responseJ.get("created_at").toString(),
+                                    responseJ.get("updated_at").toString(),
+                                    responseJ.get("lat").toString(),
+                                    responseJ.get("long").toString())
+
+                                for (i in aux){
+                                    newTareaData.add(i)
+                                }
+
+                                listOfTareas.add(newTareaData)
+                                var openFragment = supportFragmentManager.findFragmentByTag("TAREASLISTS")
+                                if (openFragment != null) {
+                                    supportFragmentManager
+                                        .beginTransaction()
+                                        .remove(openFragment)
+                                        .commit()
+                                    supportFragmentManager
+                                        .beginTransaction()
+                                        .add(R.id.mainContainer,TareasFragment.newInstance(listOfTareas),"TAREASLISTS")
+                                        .commit()
+                                }
+                            }
+                        }
+                        override fun onFailure(call: Call<JsonArray>, t: Throwable) {
+                        }
+                    })
+                }
+            }
+            mDialogView.cancelNewTareaButton.setOnClickListener {
+                mAlertDialog.dismiss()
+            }
 
         }
     }

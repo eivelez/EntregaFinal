@@ -24,6 +24,10 @@ interface Api {
     @Headers("Content-Type: application/json")
     fun addList(@Body body: String, @Header("token")key: String): Call<JsonObject>
 
+    @POST("items")
+    @Headers("Content-Type: application/json")
+    fun addItem(@Body body:String, @Header("token")key:String): Call<JsonArray>
+
     //@GET("trending")
     //fun getTrend(@Query("api_key") apiKey:String?,@Query("limit") limit:String?):Call<JsonObject>
 
