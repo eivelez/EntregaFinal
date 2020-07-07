@@ -19,6 +19,7 @@ import com.example.finalproject.configuration.API_KEY
 import com.example.finalproject.dummy.DummyContent
 import com.example.finalproject.network.Api
 import com.example.finalproject.network.Service
+import com.firebase.ui.auth.AuthUI
 import com.google.android.gms.location.*
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
@@ -195,6 +196,14 @@ class MainActivity : AppCompatActivity() ,
                     .add(R.id.mainContainer,toDoListFragment.newInstance(listOfLists),"TODOLISTS")
                     .commit()
             }
+        }
+        else if (buttonState=="list"){
+            AuthUI.getInstance()
+                .signOut(this)
+                .addOnCompleteListener {
+                    // ...
+                }
+            super.onBackPressed()
         }
 
     }
