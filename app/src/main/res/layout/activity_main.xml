@@ -20,7 +20,31 @@
             android:layout_marginLeft="10dp"
             android:layout_gravity="center"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Salir" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="5"
+            android:text="" />
+
+        <ImageView
+            android:id="@+id/userImageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/ic_person_black_24dp" />
+
+        <TextView
+            android:layout_gravity="center"
+            android:id="@+id/mailTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="mail@mail.com" />
     </LinearLayout>
 
     <LinearLayout

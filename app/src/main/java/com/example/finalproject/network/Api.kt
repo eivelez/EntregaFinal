@@ -51,7 +51,7 @@ interface Api {
     //@GET("images/search")
     //fun getImage(@Header("Authorization") key: String?,@Query("breed_id") breedId: String? ): Call<JsonArray>
 
-    @PUT("update_self")
+    @PUT("users/update_self")
     @Headers("Content-Type: application/json")
     fun editUser(@Body body: String, @Header("token") key: String?): Call<JsonObject>
 

@@ -17,8 +17,8 @@
         <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyBH9V5bQR8NiE3cDgeax6xuFkn0B6LdEk4"/>
 
 
-        <activity android:name=".ItemDetail" android:theme="@style/Theme.MaterialComponents.NoActionBar"></activity>
-        <activity android:name=".UserPage" />
+        <activity android:name=".ItemDetail" android:theme="@style/Theme.MaterialComponents.NoActionBar"/>
+        <activity android:name=".UserPage" android:theme="@style/Theme.MaterialComponents.NoActionBar"/>
         <activity
             android:name=".LoginActivity"
             android:theme="@style/Theme.MaterialComponents.NoActionBar">

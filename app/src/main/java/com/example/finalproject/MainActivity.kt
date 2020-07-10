@@ -50,16 +50,24 @@ class MainActivity : AppCompatActivity() ,
     lateinit var mFusedLocationClient: FusedLocationProviderClient
     var PERMISSION_ID = 42
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        userImageView.setOnClickListener{
+            val intent  = Intent(this,UserPage::class.java)
+            startActivity(intent)
+
+        }
         buttonLogout.setOnClickListener {
             AuthUI.getInstance()
                 .signOut(this)
                 .addOnCompleteListener {
                     // ...
                 }
-            super.onBackPressed()
+            val logInt = Intent(this,LoginActivity::class.java)
+            startActivity(logInt)
         }
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         getLastLocation()
@@ -78,6 +86,7 @@ class MainActivity : AppCompatActivity() ,
                     loggedUser.last_name = answer.get("last_name").asString
                     loggedUser.phone = answer.get("phone").asString
                     loggedUser.profile_photo = answer.get("profile_photo").asString
+                    mailTextView.text = loggedUser. first_name +" "+ loggedUser.last_name
                 }
             }
             override fun onFailure(call: Call<JsonObject>, t: Throwable) {
@@ -139,6 +148,12 @@ class MainActivity : AppCompatActivity() ,
                                         override fun onFailure(call: Call<JsonObject>, t: Throwable) {
                                         }
                                     })
+                                }
+                                if (list.size == 0){
+                                    supportFragmentManager
+                                        .beginTransaction()
+                                        .add(R.id.mainContainer,toDoListFragment.newInstance(listOfLists),"TODOLISTS")
+                                        .commit()
                                 }
                             }
                         }

@@ -41,7 +41,7 @@ class MyTareasRecyclerViewAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = mValues[position]
-        holder.mIdView.text = item[2]
+        //holder.mIdView.text = item[2]
         holder.mContentView.text = item[1]
 
         with(holder.mView) {
